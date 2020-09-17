@@ -3,19 +3,107 @@
 
 <h1>Turtle Details</h1>
 
-<div class="card">
-
-    <div class="card-content">
-        <span class="card-title">{{ turtle.name }}</span>
-        <p>Species: {{ turtle.species }}</p>
-        <p>Description: {{ turtle.description }}</p>
-        {% if turtle.age > 0 %}
-        <p>Age: {{ turtle.age }}</p>
+<div class="row">
+    <div class="col s6">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">{{ turtle.name }}</span>
+                <p>Species: {{ turtle.species }}</p>
+                <p>Description: {{ turtle.description }}</p>
+                {% if turtle.age > 0 %}
+                <p>Age: {{ turtle.age }}</p>
+                {% else %}
+                <p>Age: Hatchling</p>
+                {% endif %}
+            </div>
+            <div class="card-action">
+                <a href="{% url 'turtles_update' turtle.id %}">Edit</a>
+                <a href="{% url 'turtles_delete' turtle.id %}">Delete</a>
+            </div>
+        </div>
+    </div>
+    <div class="col s6">
+        <form action="{% url 'add_feeding' turtle.id %}" method="post">
+            {% csrf_token %}
+            {{ feeding_form.as_p }}
+            <input type="submit" class="btn" value="Add Feeding">
+        </form>
+        <table class="striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Meal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for feeding in turtle.feeding_set.all %}
+                <tr>
+                    <td>{{feeding.date}}</td>
+                    <td>{{feeding.get_meal_display}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- This is all new markup to be added just above the <script> tag -->
+<hr>
+<div class="row">
+    <div class="col s6">
+        <h3>{{ turtle.name }}'s Toys</h3>
+        {% if turtle.toys.count %}
+        {% for toy in turtle.toys.all %}
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                    A <span style="color: {{ toy.color }}">{{ toy.color }}</span> {{ toy.name }}
+                </span>
+                <div class="card-action">
+                    <form action="{% url 'unassoc_toy' turtle.id toy.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn">Remove</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
         {% else %}
-        <p>Age: Hatchling</p>
+        <h5>No Toys :(</h5>
         {% endif %}
     </div>
-
+    <!-- Available toys will come after this line -->
+    <div class="col s6">
+        <h3>Available Toys</h3>
+        {% if toys.count %}
+        {% for toy in toys.all %}
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                    A <span style="color: {{ toy.color }}">{{ toy.color }}</span> {{ toy.name }}
+                </span>
+            </div>
+            <div class="card-action">
+                <form action="{% url 'assoc_toy' turtle.id toy.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn">Add</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <h5>{{turtle.name}} Already Has All Toys Available</h5>
+        {% endif %}
+    </div>
 </div>
-
+<script>
+    var dateEl = document.getElementById('id_date');
+    M.Datepicker.init(dateEl, {
+        format: 'yyyy-mm-dd',
+        defaultDate: new Date(),
+        setDefaultDate: true,
+        autoClose: true
+    });
+    var selectEl = document.getElementById('id_meal');
+    M.FormSelect.init(selectEl);
+</script>
 {% endblock %}
