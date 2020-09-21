@@ -48,7 +48,7 @@ def unassoc_toy(request, turtle_id, toy_id):
 
 class TurtleCreate(CreateView):
   model = Turtle
-  fields = '__all__'
+  fields = ['name', 'species', 'description', 'age']
 
 class TurtleUpdate(UpdateView):
   model = Turtle
